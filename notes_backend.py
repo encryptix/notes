@@ -1,9 +1,5 @@
 from db import DB
 
-def application(environ, start_response):
-    start_response("200 OK", [("Content-Type", "text/plain")])
-    return ["Hell0 World! "]
-
 class Notes:
     database = "NOTES"
     note_id = "id"
@@ -12,30 +8,31 @@ class Notes:
     def __init__(self):
         self.DB = DB(self.database, self.note_id)
 
-    def select(self, row_id):
-        row = self.DB.select_one(row_id, [self.data])
+    def index(self):
+        rows = self.DB.select_all([self.note_id])
+        return_str = "<notes>"
+        for row in rows:
+            return_str += "<note_id>"+str(row[0])+"</note_id>"
+        return return_str+"</notes>"
+
+    def select_note(self, note_id):
+        row = self.DB.select_one(note_id, [self.data])
         if row:
-            return row
+            return str(row[0])
         else:
-            return "<No_Note>"
+            return "<no_note>"
     
-    def update(self, row_id, text):
-        if self.DB.update(row_id,[self.data],[text]):
-            return "<Success>"
+    def update_note(self, note_id, text):
+        if self.DB.update(note_id,[self.data],[text]):
+            return "<success>"
         else:
-            return "<Error>"
+            return "<error>"
 
-    def add_row(self,text):
-        self.DB.insert([self.data],[text])
+    def add_note(self,text):
+        return self.DB.insert([self.data],[text])
 
-    def remove_row(self, row_id):
-        if self.DB.remove(row_id):
-            return "<Success>"
+    def remove_note(self, note_id):
+        if self.DB.remove(note_id):
+            return "<success>"
         else:
-            return "<Error>"
-
-notes = Notes()
-print notes.select(2)
-
-#notes.add_row("test message")
-print notes.update(2, ["hello w0rld"])
+            return "<error>"
