@@ -33,6 +33,21 @@ class DB:
 
         return row
 
+    def select_all(self,columns):
+        columns_string = ""
+        for column in columns:
+            columns_string += column+", "
+        #remove last ,
+        columns_string = columns_string[:-2]
+
+        statement = "SELECT "+columns_string+" FROM "+self.db_name
+        self.init_cursor()
+        self.cursor.execute(statement)
+        rows = self.cursor.fetchall()
+        self.release_conn()
+
+        return rows
+
     def insert(self,columns,data):
         print "todo"
         self.init_cursor()
