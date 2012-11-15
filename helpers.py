@@ -12,7 +12,6 @@ class FormHelpers:
             try:
                 return escape(data.get(identifier)[0])
             except:
-                print "exception"
                 return None
         return None
 
@@ -25,3 +24,10 @@ class FormHelpers:
             except:
                 return None
         return None
+
+class NumberHelpers:
+    @staticmethod
+    def is_positive_integer(number):
+        if number:
+            return number.isdigit()
+        return False
