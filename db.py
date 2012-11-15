@@ -53,11 +53,11 @@ class DB:
         self.init_cursor()
         statement = "insert into "+self.db_name+" ( "+self.id_column+" , "+columns[0]+") values ( ? , ? )"
         self.cursor.execute(statement, [None, str(data[0])])
-
-        row_id = self.cursor.execute('SELECT last_insert_rowid()')
+        row_id = self.cursor.execute('SELECT last_insert_rowid()').fetchone()
         self.conn.commit()
         self.release_conn()
-        return row_id
+        
+        return str(row_id[0])
 
     def update(self, row_id, columns, data):
         #columns and data are lists which map to each other
