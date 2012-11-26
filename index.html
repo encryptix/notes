@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src="client.js"></script>
+</head>
+<body onload="get_notes()">
+    <div id="notes_area">
+        <div id="note_area">
+            <div id="topbar">
+               
+                <input type="button" class="add_button" onClick="add_note()" value="+" />
+                
+                <input type="button" class="remove_button" onClick="delete_note('current_note')" value="X" />
+
+                <input type="hidden" id="current_note_id" value="-1"/>
+
+            </div>
+            <div id="note">
+                <textarea rows="20" cols="50" id="note_text" onKeyUp="update_note()">
+                </textarea>
+            </div>
+        </div>
+        <div id="index_area">
+            <!--Dynamic creation-->
+            <div class="add_note">
+               <input type="button" class="add_button" onClick="add_note()" value="Add Note" />
+            </div>
+        </div>
+        <div class="clear"></div>
+        <div id="message_area">
+            <p id="message_text"></p>
+        </div>
+    </div>
+</body>
+</html>
