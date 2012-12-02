@@ -1,5 +1,6 @@
 #http://webpython.codepoint.net/wsgi_tutorial
 from cgi import parse_qs, escape
+import base64
 
 class FormHelpers:
     @staticmethod
@@ -31,3 +32,8 @@ class NumberHelpers:
         if number:
             return number.isdigit()
         return False
+
+class GeneralHelpers:
+    @staticmethod
+    def createJSONEntry(name,value):
+        return "\""+name+"\": \""+value+"\""
