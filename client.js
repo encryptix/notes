@@ -1,6 +1,6 @@
 var site="site=http://dev.raynoonanwindows.ie/";
-
-//Note app specific js functions
+var first_time = true;
+//Parser
 function create_JSON_object(dataJSON){
     log("Recieved: "+dataJSON);
     var message_area = document.getElementById("message_area");
@@ -25,7 +25,7 @@ function create_JSON_object(dataJSON){
     }
     return null;
 }
-
+//Interaction with HTML
 function add_note_index(noteID){
     var index_area = document.getElementById("index_area");
     var html = '<input type="hidden" id="note_id" value="'+noteID+'"/>';
@@ -49,6 +49,12 @@ function show_note(noteID,content){
     note_text.value = content;
 }
 
+function set_editable(bool){
+    log("set_editable: "+bool)
+    var note_text = document.getElementById("note_text");
+    note_text.disabled = !bool;
+}
+
 //Receive Functions
 function receive_note_indexes(dataJSON){
     log("Recieve Index");
@@ -64,6 +70,8 @@ function receive_note_indexes(dataJSON){
             }
             var id = indexes.notes[0].noteID;
             get_note(id);
+        }else{
+            set_editable(false);
         }
     }
 }
@@ -80,6 +88,7 @@ function receive_note(dataJSON){
 
         var text = atob(textb64);
         show_note(id,text);
+        set_editable(true);
     }
 }
 
@@ -91,6 +100,9 @@ function receive_add_note(dataJSON){
         var note_id = noteObj.noteID;
         add_note_index(note_id);
         show_note(note_id,"NewNote");
+        if(first_time)
+            set_editable(true);
+            first_time=false;
     }
 }
 
@@ -107,6 +119,9 @@ function receive_delete_note(dataJSON){
         var hidden_field_id = document.getElementById("current_note_id");
         if(hidden_field_id.value == note_id){
             hidden_field_id.value = "-1";
+            //Lazy way of dealing with note content
+            first_time=true;
+            get_notes();
         }
     }
 }
