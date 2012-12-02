@@ -7,12 +7,13 @@ def do_index():
     n = Notes()
     #will returns a list of row_id's/None
     rows =  n.index()
+    return_str = "{\"notes\": ["
+    for row in rows:
+        return_str += "{"+GeneralHelpers.createJSONEntry("noteID",str(row[0]))+"},"
+    #if there was content parse off the last ,
     if rows:
-        return_str = "{\"notes\": ["
-        for row in rows:
-            return_str += "{"+GeneralHelpers.createJSONEntry("noteID",str(row[0]))+"},"
-        return return_str[:-1]+"]}"
-    return "<error>"
+         return_str = return_str[:-1]
+    return return_str+"]}"
 
 def do_select(note_id):
     n = Notes()
@@ -59,46 +60,33 @@ def application(environ, start_response):
 
     action = FormHelpers.get_input(d,'action')
 
+    response_body = "<error_interface>"
     #index,view,add,delete,update
-    if not action:
-        response_body = "<error_interface>"
-
-    elif action == "index":
+    if action == "index":
         response_body = do_index()
     elif action =="view":
         note_id = FormHelpers.get_input(d,'id')
         if NumberHelpers.is_positive_integer(note_id):
-            response_body =  do_select(note_id)
-        else:
-            response_body = "<error_interface>"
+            response_body = do_select(note_id)
 
         
     elif action == "add":
         data = FormHelpers.get_input(d,'data')
-        if data and data > 0:
+        if data and len(data) > 0:
             response_body = do_add_note(data)
-        else:
-            response_body = "<error_interface>"
 
     elif action == "delete":
         note_id = FormHelpers.get_input(d,'id')
         if NumberHelpers.is_positive_integer(note_id):
             response_body = do_delete(note_id)
-        else:
-            response_body = "<error_interface>"
         
     elif action == "update":
         note_id = FormHelpers.get_input(d,'id')
         data = FormHelpers.get_input(d,'data')
 
         if NumberHelpers.is_positive_integer(note_id) and data and len(data) > 0:
-            response_body = do_update(note_id,data)
-        else:
-            response_body = "<error_interface>"        
-    else:
-        response_body = "<error_interface>"
+            response_body = do_update(note_id,data)       
 
-    response_body = response_body  
     status = '200 OK'
     response_headers = [('Content-Type', 'text/html'),('Content-Length', str(len(response_body)))]
     start_response(status, response_headers)
