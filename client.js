@@ -1,5 +1,7 @@
 var site="site=http://dev.raynoonanwindows.ie/";
 var first_time = true;
+var new_note_content = "NewNote";
+var new_note_name = "NoteName";
 //Parser
 function create_JSON_object(dataJSON){
     log("Recieved: "+dataJSON);
@@ -26,11 +28,11 @@ function create_JSON_object(dataJSON){
     return null;
 }
 //Interaction with HTML
-function add_note_index(noteID){
+function add_note_index(noteID,noteName){
     var index_area = document.getElementById("index_area");
     var html = '<input type="hidden" id="note_id" value="'+noteID+'"/>';
     html += '<div class="selectable" onClick="get_note('+noteID+')" >';
-    html +=     '<b>Note ID= :'+noteID+'</b>';
+    html +=     '<input type="text" class="note_name" value="'+noteName+'" onKeyUp="update_note_name('+noteID+')" />'
     html += '</div>';
     html += '<input type="button" class="remove_button" onClick="delete_note('+noteID+')" value="Delete Note" />';
                 
@@ -66,7 +68,9 @@ function receive_note_indexes(dataJSON){
         if(length > 0){
             for(i=0;i<length;i++){
                 var index = indexes.notes[i].noteID;
-                add_note_index(index);
+                var note_name = atob(indexes.notes[i].noteName);
+
+                add_note_index(index,note_name);
             }
             var id = indexes.notes[0].noteID;
             get_note(id);
@@ -98,8 +102,9 @@ function receive_add_note(dataJSON){
     var noteObj = create_JSON_object(dataJSON);
     if(noteObj != null){
         var note_id = noteObj.noteID;
-        add_note_index(note_id);
-        show_note(note_id,"NewNote");
+
+        add_note_index(note_id,new_note_name);
+        show_note(note_id,new_note_content);
         if(first_time)
             set_editable(true);
             first_time=false;
@@ -141,10 +146,10 @@ function get_note(noteID){
 
 function add_note(){
     log("Add Note");
-    var data = "NewNote";
-    data_b64 = btoa(data);
+    data_b64 = btoa(new_note_content);
+    name_b64 = btoa(new_note_name);
 
-    ajax(receive_add_note,"action=add&data="+data_b64);
+    ajax(receive_add_note,"action=add&data="+data_b64+"&name="+name_b64);
 }
 
 function delete_note(index){
@@ -167,6 +172,17 @@ function update_note(){
 
     //Just error check for updating a note
     ajax(create_JSON_object,"action=update&id="+id+"&data="+data_b64);
+}
+
+function update_note_name(id){
+    log("Update Note Name");
+    var name = document.getElementById("note_"+id).getElementsByTagName("input")[1].value;
+
+    log("id: "+id+", name: "+name);
+
+    name_b64 = btoa(name);
+
+    ajax(create_JSON_object,"action=update_name&id="+id+"&name="+name_b64);
 }
 
 //Standard js functions

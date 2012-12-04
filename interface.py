@@ -9,7 +9,9 @@ def do_index():
     rows =  n.index()
     return_str = "{\"notes\": ["
     for row in rows:
-        return_str += "{"+GeneralHelpers.createJSONEntry("noteID",str(row[0]))+"},"
+        return_str += "{"+GeneralHelpers.createJSONEntry("noteID",str(row[0]))+","
+        return_str += GeneralHelpers.createJSONEntry("noteName",str(row[1]))+"},"
+
     #if there was content parse off the last ,
     if rows:
          return_str = return_str[:-1]
@@ -31,6 +33,14 @@ def do_update(note_id, text):
     else:
         return "<error>"
 
+def do_update_name(note_id,name):
+    n = Notes();
+    #returns boolean
+    if n.update_note_name(note_id,name):
+        return "<success>"
+    else:
+        return "<error>"
+
 def do_delete(note_id):
     n = Notes()
     #returns boolean
@@ -40,11 +50,10 @@ def do_delete(note_id):
     else:
         return "<error>"
 
-def do_add_note(data):
+def do_add_note(data,name):
     n = Notes()
-    #returns id TODO finish error check
-    note_id = n.add_note(data)
-    return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+"}"
+    note_id = n.add_note(data,name)
+    return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
 
 def application(environ, start_response):
     try:
@@ -72,8 +81,9 @@ def application(environ, start_response):
         
     elif action == "add":
         data = FormHelpers.get_input(d,'data')
-        if data and len(data) > 0:
-            response_body = do_add_note(data)
+        name = FormHelpers.get_input(d,'name')
+        if data and len(data) > 0 and name and len(name) >0:
+            response_body = do_add_note(data,name)
 
     elif action == "delete":
         note_id = FormHelpers.get_input(d,'id')
@@ -86,6 +96,13 @@ def application(environ, start_response):
 
         if NumberHelpers.is_positive_integer(note_id) and data and len(data) > 0:
             response_body = do_update(note_id,data)       
+    
+    elif action=="update_name":
+        note_id = FormHelpers.get_input(d,'id')
+        name = FormHelpers.get_input(d,'name')
+
+        if NumberHelpers.is_positive_integer(note_id) and name and len(name) > 0:
+            response_body = do_update_name(note_id,name);
 
     status = '200 OK'
     response_headers = [('Content-Type', 'text/html'),('Content-Length', str(len(response_body)))]
