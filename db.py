@@ -50,8 +50,6 @@ class DB:
 
     def insert(self,columns,data):
         #columns and data are lists which map to each other
-
-        self.init_cursor()
         columns_string = " ( "+self.id_column+" , "
         value_string = " ( ? ,"
 
@@ -70,6 +68,7 @@ class DB:
         for value in data:
             values.append(value)
 
+        self.init_cursor()
         self.cursor.execute(statement, values)
         row_id = self.cursor.execute('SELECT last_insert_rowid()').fetchone()
         self.conn.commit()
@@ -78,19 +77,26 @@ class DB:
         return str(row_id[0])
 
     def update(self, row_id, columns, data):
-        print "todo"
         #columns and data are lists which map to each other
+        update_str = "update "+self.db_name+" set "
+        for column in columns:
+            update_str+=column + " = ? , "
+        update_str=update_str[:-2]+" where "+self.id_column+" = ?"
+
+        values = []
+        for value in data:
+            values.append(str(value))
+        values.append(str(row_id))
+        
         self.init_cursor()
-        statement = "update "+self.db_name+" set "+columns[0]+" = ? WHERE "+self.id_column+" = ?"
-        print statement
-        print str(row_id) + " : "+str(data[0])
-        self.cursor.execute(statement, [str(data[0]), str(row_id)])
+        self.cursor.execute(update_str, values)
         self.conn.commit()
         self.release_conn()
         return True  
         #return column id      
     
     def remove(self, row_id):
+        print "todo"
         query = "DELETE FROM "+self.db_name+" WHERE "+self.id_column+" = ?"
         self.init_cursor()
         #error here when number > 9
