@@ -17,36 +17,32 @@ def do_index():
          return_str = return_str[:-1]
     return return_str+"]}"
 
-def do_select(note_id):
-    n = Notes()
+def do_select(n):
     #returns note/None
-    note = n.select_note(note_id)
+    note = n.select_note()
     if note:
-        return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("note",note)+"}"
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+", "+GeneralHelpers.createJSONEntry("note",note)+"}"
     return "<no_note>"
 
-def do_update(note_id, text):
-    n = Notes()
+def do_update(n, text):
     #returns boolean
-    if n.update_note(note_id,text):
+    if n.update_note(text):
         return "<success>"
     else:
         return "<error>"
 
-def do_update_name(note_id,name):
-    n = Notes();
+def do_update_name(n,name):
     #returns boolean
-    if n.update_note_name(note_id,name):
+    if n.update_note_name(name):
         return "<success>"
     else:
         return "<error>"
 
-def do_delete(note_id):
-    n = Notes()
+def do_delete(n):
     #returns boolean
-    if n.remove_note(note_id):
+    if n.remove_note():
         #return the note id
-        return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+"}"
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+"}"
     else:
         return "<error>"
 
@@ -54,6 +50,16 @@ def do_add_note(data,name):
     n = Notes()
     note_id = n.add_note(data,name)
     return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
+#TODO:: new methods integrate
+def do_lock(n,new_pass):
+    return n.set_password(new_pass)
+
+def do_unlock(n, current_pass):
+    if n.check_password(current_pass):
+        return n.set_password(current_pass,"")
+    else:
+        return "<locked>"
+
 
 def application(environ, start_response):
     try:
@@ -73,36 +79,43 @@ def application(environ, start_response):
     #index,view,add,delete,update
     if action == "index":
         response_body = do_index()
-    elif action =="view":
-        note_id = FormHelpers.get_input(d,'id')
-        if NumberHelpers.is_positive_integer(note_id):
-            response_body = do_select(note_id)
-
-        
+    
     elif action == "add":
         data = FormHelpers.get_input(d,'data')
         name = FormHelpers.get_input(d,'name')
         if data and len(data) > 0 and name and len(name) >0:
             response_body = do_add_note(data,name)
+    #The rest of these require the notes to be unlocked
+    note_id = FormHelpers.get_input(d,'id')   
+    if NumberHelpers.is_positive_integer(note_id):
+        note = Note(note_id)
+        if note.is_locked:
+            if action == "unlock":
+                if password and len(password) > 0:
+                    response_body = do_unlock(note,password)
+            else:
+                response_body = "<locked>"
 
-    elif action == "delete":
-        note_id = FormHelpers.get_input(d,'id')
-        if NumberHelpers.is_positive_integer(note_id):
-            response_body = do_delete(note_id)
+        elif action =="view":
+            response_body = do_select(note)
+
+        elif action == "delete":
+            response_body = do_delete(note)
+            
+        elif action == "update":
+            data = FormHelpers.get_input(d,'data')
+            if data and len(data) > 0:
+                response_body = do_update(note,data)       
         
-    elif action == "update":
-        note_id = FormHelpers.get_input(d,'id')
-        data = FormHelpers.get_input(d,'data')
+        elif action=="update_name":
+            name = FormHelpers.get_input(d,'name')
+            if name and len(name) > 0:
+                response_body = do_update_name(note,name)
 
-        if NumberHelpers.is_positive_integer(note_id) and data and len(data) > 0:
-            response_body = do_update(note_id,data)       
-    
-    elif action=="update_name":
-        note_id = FormHelpers.get_input(d,'id')
-        name = FormHelpers.get_input(d,'name')
-
-        if NumberHelpers.is_positive_integer(note_id) and name and len(name) > 0:
-            response_body = do_update_name(note_id,name);
+        elif action=="lock":
+            password = FormHelpers.get_input(d,'password')
+            if password and len(password) > 0:
+                response_body = do_lock(note,password)
 
     status = '200 OK'
     response_headers = [('Content-Type', 'text/html'),('Content-Length', str(len(response_body)))]
