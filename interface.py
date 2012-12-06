@@ -4,7 +4,7 @@ from helpers import GeneralHelpers
 from notes_backend import Notes
 
 def do_index():
-    n = Notes()
+    n = Notes(None)
     #will returns a list of row_id's/None
     rows =  n.index()
     return_str = "{\"notes\": ["
