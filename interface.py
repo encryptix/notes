@@ -49,8 +49,8 @@ def do_delete(n):
 def do_add_note(data,name):
     n = Notes()
     note_id = n.add_note(data,name)
-    return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
-#TODO:: new methods integrate
+    return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
+
 def do_lock(n,new_pass):
     return n.set_password(new_pass)
 
