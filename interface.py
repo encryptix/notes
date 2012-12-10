@@ -83,9 +83,9 @@ def application(environ, start_response):
 
     action = FormHelpers.get_input(d,'action')
     if action==None:
-        print "ACTION IS NONE"
+        print "Action is: NONE"
     else:
-        print "RAY: "+action
+        print "Action is: "+action
 
     response_body = "<error_interface>"
     #index,view,add,delete,update
@@ -102,7 +102,7 @@ def application(environ, start_response):
     if NumberHelpers.is_positive_integer(note_id):
         note = Notes(note_id)
         if note.is_locked():
-            print "Note is locked"
+            print "Note "+str(note_id)+"is locked"
             if action == "unlock":
                 password = str(FormHelpers.get_input(d,'password'))
                 if password and len(password) > 0:

@@ -32,12 +32,16 @@ function create_JSON_object(dataJSON){
         if (jsonObj.hasOwnProperty("isLocked")){
             var note_id = jsonObj.noteID;
             var is_locked = jsonObj.isLocked;
+
+            var hidden_field_id = document.getElementById("current_note_id");
+            hidden_field_id.value = jsonObj.noteID;
             
             if(is_locked == true || is_locked=="true"){
                 var note_text = document.getElementById("note_text");
                 note_text.value = "";
-                message_text.innerText = "Note is locked please unlock to continue";
 
+                message_text.innerText = "Note is locked please unlock to continue";
+                set_editable(false,note_id);
                 lock.checked = true;
                 return null;
             }
@@ -49,6 +53,12 @@ function create_JSON_object(dataJSON){
 //Interaction with HTML
 function add_note_index(noteID,noteName){
     var index_area = document.getElementById("index_area");
+    //Check if it already exists
+    var current_div = document.getElementById("note_"+noteID);
+    if(current_div!=null){
+        return;
+    }
+
     var html = '<input type="hidden" id="note_id" value="'+noteID+'"/>';
     html += '<div class="selectable" onClick="get_note('+noteID+')" >';
     html +=     '<input type="text" class="note_name" value="'+noteName+'" onKeyUp="update_note_name('+noteID+')" />'
@@ -65,15 +75,26 @@ function add_note_index(noteID,noteName){
 function show_note(noteID,content){
     var hidden_field_id = document.getElementById("current_note_id");
     var note_text = document.getElementById("note_text");
-
     hidden_field_id.value = noteID;
     note_text.value = content;
 }
 
-function set_editable(bool){
+function set_editable(bool,noteID){
     log("set_editable: "+bool)
     var note_text = document.getElementById("note_text");
     note_text.disabled = !bool;
+    var id;
+    if (!noteID){
+        var hidden_field_id = document.getElementById("current_note_id");
+        id = hidden_field_id.value;
+    }else{
+        id = noteID;
+    }
+
+    var note_name = document.getElementById("note_"+id);
+    if (note_name != null){
+        note_name.getElementsByTagName("input")[1].disabled = !bool;
+    }
 }
 
 //Receive Functions
@@ -124,9 +145,11 @@ function receive_add_note(dataJSON){
 
         add_note_index(note_id,new_note_name);
         show_note(note_id,new_note_content);
-        if(first_time)
+        if(first_time){
             set_editable(true);
+            //TODO::just set this correctly 
             first_time=false;
+        }
     }
 }
 
@@ -150,8 +173,8 @@ function receive_delete_note(dataJSON){
     }
 }
 
-function receive_lock(dataJSON){
-    log("Receive lock");
+function receive_unlock(dataJSON){
+    log("Receive unlock");
 
     var lockInfo = create_JSON_object(dataJSON);
 
@@ -160,6 +183,10 @@ function receive_lock(dataJSON){
         var is_locked = lockInfo.isLocked;
 
         if (is_locked == false || is_locked == "false"){
+            var note_text = document.getElementById("note_text");
+            note_text.disabled = false;
+
+
             get_note(note_id);
         }
     }
@@ -189,41 +216,56 @@ function add_note(){
 
 function delete_note(index){
     log("Delete Note");
-    var id = index;
-    if(index =='current_note'){
-        id = document.getElementById("note_id").value;
+    var lock = document.getElementById("lock");
+    if (lock.checked){
+        log("note is locked");
+    }else{
+        var id = index;
+        if(index =='current_note'){
+            id = document.getElementById("note_id").value;
+        }
+        ajax(receive_delete_note,"action=delete&id="+id);
     }
-    ajax(receive_delete_note,"action=delete&id="+id);
 }
 
 function update_note(){
     log("Update Note");
-    var id = document.getElementById("current_note_id").value;
-    var data = document.getElementById("note_text").value;
 
-    log("id: "+id+", data: "+data);
+    var lock = document.getElementById("lock");
+    if (lock.checked){
+        log("note is locked");
+    }else{
+        var id = document.getElementById("current_note_id").value;
+        var data = document.getElementById("note_text").value;
 
-    data_b64 = btoa(data);
+        log("id: "+id+", data: "+data);
 
-    //Just error check for updating a note
-    ajax(create_JSON_object,"action=update&id="+id+"&data="+data_b64);
+        data_b64 = btoa(data);
+
+        //Just error check for updating a note
+        ajax(create_JSON_object,"action=update&id="+id+"&data="+data_b64);
+    }
 }
 
 function update_note_name(id){
     log("Update Note Name");
-    var name = document.getElementById("note_"+id).getElementsByTagName("input")[1].value;
 
-    log("id: "+id+", name: "+name);
+    var lock = document.getElementById("lock");
+    if (lock.checked){
+        log("note is locked");
+    }else{
+        var name = document.getElementById("note_"+id).getElementsByTagName("input")[1].value;
+        log("id: "+id+", name: "+name);
 
-    name_b64 = btoa(name);
-
-    ajax(create_JSON_object,"action=update_name&id="+id+"&name="+name_b64);
+        name_b64 = btoa(name);
+        ajax(create_JSON_object,"action=update_name&id="+id+"&name="+name_b64);
+    }
 }
 
 function lock_clicked(){
     log("Lock Clicked")
     var lock = document.getElementById("lock");
-    var id = document.getElementById("note_id").value;
+    var id = document.getElementById("current_note_id").value;
     var password = prompt("Enter Password","");    
 
     if(password == null || password == ""){
@@ -244,7 +286,7 @@ function lock_note(id,password){
 
 function unlock_note(id,password){
     log("Unlock Note: "+id)
-    ajax(receive_lock,"action=unlock&id="+id+"&password="+password);
+    ajax(receive_unlock,"action=unlock&id="+id+"&password="+password);
 }
 
 //Standard js functions
