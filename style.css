@@ -30,7 +30,7 @@
     display:inline-block;
 }
 
-#note_name{
+.note_name{
   width: 95px;
   border: none;
   background: transparent;
