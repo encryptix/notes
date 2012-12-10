@@ -22,8 +22,27 @@ function create_JSON_object(dataJSON){
         message_text.innerText = "Sucessfully Completed";
         return true;
     }else{
+        jsonObj = JSON.parse(dataJSON);
+
+        var lock = document.getElementById("lock");
+        lock.checked = false;
         message_text.innerText = "";
-        return jsonObj = JSON.parse(dataJSON);
+
+        //Check that the note wasnt locked
+        if (jsonObj.hasOwnProperty("isLocked")){
+            var note_id = jsonObj.noteID;
+            var is_locked = jsonObj.isLocked;
+            
+            if(is_locked == true || is_locked=="true"){
+                var note_text = document.getElementById("note_text");
+                note_text.value = "";
+                message_text.innerText = "Note is locked please unlock to continue";
+
+                lock.checked = true;
+                return null;
+            }
+        }
+        return jsonObj;
     }
     return null;
 }
@@ -59,7 +78,7 @@ function set_editable(bool){
 
 //Receive Functions
 function receive_note_indexes(dataJSON){
-    log("Recieve Index");
+    log("Receive Index");
 
     var indexes = create_JSON_object(dataJSON);
     if(indexes != null){
@@ -81,7 +100,7 @@ function receive_note_indexes(dataJSON){
 }
 
 function receive_note(dataJSON){
-    log("Recieve Note");
+    log("Receive Note");
 
     var note = create_JSON_object(dataJSON);
     if(note != null){
@@ -97,7 +116,7 @@ function receive_note(dataJSON){
 }
 
 function receive_add_note(dataJSON){
-    log("Recieve Add Note");
+    log("Receive Add Note");
 
     var noteObj = create_JSON_object(dataJSON);
     if(noteObj != null){
@@ -112,7 +131,7 @@ function receive_add_note(dataJSON){
 }
 
 function receive_delete_note(dataJSON){
-    log("Recieve Delete Note");
+    log("Receive Delete Note");
 
     var noteObj = create_JSON_object(dataJSON);
     if(noteObj!=null){
@@ -129,6 +148,22 @@ function receive_delete_note(dataJSON){
             get_notes();
         }
     }
+}
+
+function receive_lock(dataJSON){
+    log("Receive lock");
+
+    var lockInfo = create_JSON_object(dataJSON);
+
+    if(lockInfo != null){
+        var note_id = lockInfo.noteID;
+        var is_locked = lockInfo.isLocked;
+
+        if (is_locked == false || is_locked == "false"){
+            get_note(note_id);
+        }
+    }
+
 }
 
 //Send Functions
@@ -183,6 +218,33 @@ function update_note_name(id){
     name_b64 = btoa(name);
 
     ajax(create_JSON_object,"action=update_name&id="+id+"&name="+name_b64);
+}
+
+function lock_clicked(){
+    log("Lock Clicked")
+    var lock = document.getElementById("lock");
+    var id = document.getElementById("note_id").value;
+    var password = prompt("Enter Password","");    
+
+    if(password == null || password == ""){
+        alert("didnt enter pass; todo");
+        lock.checked = !lock.checked;
+    }else if(lock.checked){
+        lock_note(id,password);
+    }else{
+        unlock_note(id,password);
+    }
+}
+
+function lock_note(id,password){
+    log("Lock Note: "+id)
+    //UPDATE what if it doesnt lock?!
+    ajax(create_JSON_object,"action=lock&id="+id+"&password="+password);
+}
+
+function unlock_note(id,password){
+    log("Unlock Note: "+id)
+    ajax(receive_lock,"action=unlock&id="+id+"&password="+password);
 }
 
 //Standard js functions
