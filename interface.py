@@ -4,7 +4,7 @@ from helpers import GeneralHelpers
 from notes_backend import Notes
 
 def do_index():
-    n = Notes(None)
+    n = Notes("")
     #will returns a list of row_id's/None
     rows =  n.index()
     return_str = "{\"notes\": ["
@@ -21,7 +21,7 @@ def do_select(n):
     #returns note/None
     note = n.select_note()
     if note:
-        return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+", "+GeneralHelpers.createJSONEntry("note",note)+"}"
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+", "+GeneralHelpers.createJSONEntry("note",note)+"}"
     return "<no_note>"
 
 def do_update(n, text):
@@ -42,24 +42,32 @@ def do_delete(n):
     #returns boolean
     if n.remove_note():
         #return the note id
-        return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+"}"
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+"}"
     else:
         return "<error>"
 
 def do_add_note(data,name):
-    n = Notes()
+    n = Notes(None)
     note_id = n.add_note(data,name)
-    return "{"+GeneralHelpers.createJSONEntry("noteID",n.note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
+    return "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("noteName",name)+"}"
 
 def do_lock(n,new_pass):
-    return n.set_password(new_pass)
+    setpw =  n.set_password(new_pass)
+    locked = "false"
+    if setpw:
+        locked = "true"
+    return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+", "+GeneralHelpers.createJSONEntry("isLocked",locked)+"}"
+
 
 def do_unlock(n, current_pass):
     if n.check_password(current_pass):
-        return n.set_password(current_pass,"")
+        setpw = n.set_password("")
+        locked = "true"
+        if setpw:
+            locked = "false"
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+", "+GeneralHelpers.createJSONEntry("isLocked",locked)+"}"
     else:
-        return "<locked>"
-
+        return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+", "+GeneralHelpers.createJSONEntry("isLocked","true")+"}"
 
 def application(environ, start_response):
     try:
@@ -74,6 +82,10 @@ def application(environ, start_response):
     d = FormHelpers.get_form(request_body)
 
     action = FormHelpers.get_input(d,'action')
+    if action==None:
+        print "ACTION IS NONE"
+    else:
+        print "RAY: "+action
 
     response_body = "<error_interface>"
     #index,view,add,delete,update
@@ -86,15 +98,17 @@ def application(environ, start_response):
         if data and len(data) > 0 and name and len(name) >0:
             response_body = do_add_note(data,name)
     #The rest of these require the notes to be unlocked
-    note_id = FormHelpers.get_input(d,'id')   
+    note_id = FormHelpers.get_input(d,'id')
     if NumberHelpers.is_positive_integer(note_id):
-        note = Note(note_id)
-        if note.is_locked:
+        note = Notes(note_id)
+        if note.is_locked():
+            print "Note is locked"
             if action == "unlock":
+                password = str(FormHelpers.get_input(d,'password'))
                 if password and len(password) > 0:
                     response_body = do_unlock(note,password)
             else:
-                response_body = "<locked>"
+                response_body = "{"+GeneralHelpers.createJSONEntry("noteID",note_id)+", "+GeneralHelpers.createJSONEntry("isLocked","true")+"}"
 
         elif action =="view":
             response_body = do_select(note)
@@ -104,7 +118,7 @@ def application(environ, start_response):
             
         elif action == "update":
             data = FormHelpers.get_input(d,'data')
-            if data and len(data) > 0:
+            if data:
                 response_body = do_update(note,data)       
         
         elif action=="update_name":
