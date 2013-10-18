@@ -70,22 +70,30 @@ def do_unlock(n, current_pass):
         return "{"+GeneralHelpers.createJSONEntry("noteID",n.noteID)+", "+GeneralHelpers.createJSONEntry("isLocked","true")+"}"
 
 def application(environ, start_response):
+    is_get = False
+    GET_allowed=[]
     try:
         request_body_size = int(environ.get('CONTENT_LENGTH', 0))
+        # When the method is POST the query string will be sent
+        # in the HTTP request body which is passed by the WSGI server
+        # in the file like wsgi.input environment variable.
+        request_body = environ['wsgi.input'].read(request_body_size)
+        d = FormHelpers.get_form(request_body)
     except (ValueError):
-        request_body_size = 0
-
-    # When the method is POST the query string will be sent
-    # in the HTTP request body which is passed by the WSGI server
-    # in the file like wsgi.input environment variable.
-    request_body = environ['wsgi.input'].read(request_body_size)
-    d = FormHelpers.get_form(request_body)
-
+        #Assume its a get request
+        is_get = True
+        d = FormHelpers.get_form(environ['QUERY_STRING'])
+    
     action = FormHelpers.get_input(d,'action')
     if action==None:
-        print "Action is: NONE"
+        print "ACTION IS NONE"
     else:
-        print "Action is: "+action
+        print "RAY: "+action
+        if(is_get):
+            #Only allow certain requests as a get
+            if action not in GET_allowed:
+                print "ACTION not allowed"
+                action=None
 
     response_body = "<error_interface>"
     #index,view,add,delete,update
