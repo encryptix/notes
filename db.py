@@ -33,16 +33,31 @@ class DB:
 
         return row
 
-    def select_all(self,columns):
+    def select_all(self,columns,constraints,constraint_data,limit):
         columns_string = ""
         for column in columns:
             columns_string += column+", "
         #remove last ,
         columns_string = columns_string[:-2]
 
-        statement = "SELECT "+columns_string+" FROM "+self.db_name
+        where_string = ""
+        if(constraints):
+            where_string=" WHERE "
+            for constraint in constraints:
+                where_string+= constraint+" ? "
+
+        limit_string = ""
+        if(limit):
+            limit_string = " LIMIT "+str(limit)
+
+        values = []
+        for value in constraint_data or []:
+            values.append(str(value))
+
+        statement = "SELECT "+columns_string+" FROM "+self.db_name+where_string+limit_string
+        print "select statement: "+statement
         self.init_cursor()
-        self.cursor.execute(statement)
+        self.cursor.execute(statement,values)
         rows = self.cursor.fetchall()
         self.release_conn()
 
