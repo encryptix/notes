@@ -18,7 +18,7 @@ class Notes:
         return noteID
 
     def index(self):
-        return self.DB.select_all([self.note_id ,self.name])
+        return self.DB.select_all([self.note_id ,self.name],None,None,None)
 
     def select_note(self):
         row = self.DB.select_one(self.noteID, [self.data])
