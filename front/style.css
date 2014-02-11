@@ -1,14 +1,7 @@
-#notes_area{
-    margin:auto;
-}
-
-
 #note_area{
-    display:inline;
+    overflow:scroll;
     border:1px solid #CDCDC1;
     background: #CDCDC1;
-    float:left;
-    margin-right:15px;
 }
 
 #topbar{
@@ -22,18 +15,27 @@
     background: black !important;
 }
 
-#note textarea{
+#note_text{
     background-color: #FBEC5D;
+    width:99%;
+    min-height:20px;
 }
 
 #index_area{
-    display:inline-block;
+  float:right;
+  width:210px;
+  margin-left:20px;
+  margin-right:5px;
 }
 
 .note_name{
   width: 95px;
   border: none;
   background: transparent;
+}
+
+.noteID{
+  margin-bottom:5px;
 }
 
 .clear{

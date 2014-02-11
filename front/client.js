@@ -38,11 +38,17 @@ function create_JSON_object(dataJSON){
             
             if(is_locked == true || is_locked=="true"){
                 var note_text = document.getElementById("note_text");
+                div_to_textarea();
+                //note_text.value="" was not setting the value quickly enough
                 note_text.value = "";
+                document.getElementById("note_text").value="";
 
+                alert("set note text to blank.."+note_text.value);
+                alert(document.getElementById("note_text").value);
                 message_text.innerText = "Note is locked please unlock to continue";
                 set_editable(false,note_id);
                 lock.checked = true;
+                textarea_to_div();
                 return null;
             }
         }
@@ -73,10 +79,14 @@ function add_note_index(noteID,noteName){
 }
 
 function show_note(noteID,content){
+    //convert to text area to update
+    div_to_textarea();
     var hidden_field_id = document.getElementById("current_note_id");
     var note_text = document.getElementById("note_text");
     hidden_field_id.value = noteID;
     note_text.value = content;
+    //set to div
+    textarea_to_div();
 }
 
 function set_editable(bool,noteID){
@@ -316,4 +326,108 @@ function ajax(callback_func,params){
     xmlHttp.open("POST","interface.wsgi",true);
     xmlHttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     xmlHttp.send(action);
+}
+
+//Could create an object and have a .toDiv .toTextArea
+function textarea_to_div(){
+    var note_text = document.getElementById("note_text");
+    if(note_text.nodeName=="DIV"){
+        console.log("Already a div");
+        return;
+    }
+    var parent = note_text.parentNode;
+    var data = note_text.value;
+    alert(data);
+    data = data.replace(/\n/g," <br/>");
+
+    //console.log("data is "+data);
+
+    var div = document.createElement('div');
+
+    div.innerHTML = data;
+    div.setAttribute('id',"note_text");
+    div.setAttribute('onDblClick',"toggle_text_area()");
+
+    //condense into one later
+    div.innerHTML = convert_to_links(div.innerHTML);
+    parent.replaceChild(div, note_text);
+}
+
+function div_to_textarea(){
+    var note_text = document.getElementById("note_text");
+    if(note_text.nodeName=="TEXTAREA"){
+        console.log("Already a textarea");
+        return;
+    }
+    var parent = note_text.parentNode;
+    remove_links();
+    var data = note_text.innerHTML;
+
+
+    data = data.replace(/<br\/>/g,"\n");
+    data = data.replace(/<br>/g,"\n");
+    data = data.replace(/ <br\/>/g,"\n");
+    data = data.replace(/ <br>/g,"\n");
+
+    //console.log("data is "+data);
+
+    var textarea = document.createElement('textarea');
+    textarea.setAttribute('id',"note_text");
+    textarea.setAttribute('rows',"20");
+    textarea.setAttribute('cols',"50");
+    textarea.setAttribute('onKeyUp',"update_note()");
+    textarea.setAttribute('onDblClick',"toggle_text_area()");
+
+    textarea.value = data;
+    parent.replaceChild(textarea, note_text);
+
+}
+
+function toggle_text_area(){
+    var note_text = document.getElementById("note_text");
+    if(note_text.nodeName=="TEXTAREA"){
+        textarea_to_div();
+    }else{
+        div_to_textarea();
+    }
+}
+
+//was used for cancelling single click events
+function stop_event(){
+    window.event.stopPropagation();
+}
+
+function convert_to_links(text) {
+    var replaceText, replacePattern1;
+
+    //URLs starting with http://, https://
+    replacePattern1 = /(\b(https?):\/\/[-A-Z0-9+&amp;@#\/%?=~_|!:,.;]*[-A-Z0-9+&amp;@#\/%=~_|])/ig;
+    replacedText = text.replace(replacePattern1, '<a href="$1" onclick="stop_event()" target="_blank">$1</a>');
+
+    //URLs starting with "www."
+    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    //space gets eaten converting back so add one
+    replacedText = replacedText.replace(replacePattern2, ' <a href="http://$2" onclick="stop_event()" target="_blank">$2</a>');
+
+    //returns the text result
+
+    return replacedText;
+}
+
+function remove_links(){
+    var e = document.getElementById("note_text");
+    var links = e.getElementsByTagName("a");
+    //console.log(links);
+
+    var i=0;
+    while(links.length>0){
+      //console.log(links[0].innerHTML);
+      links[0].outerHTML = links[0].innerHTML;
+      i++;
+
+      if(i>1000){
+        console.log("infinite loop in remove links due to quirkyness I couldnt loop");
+        return;
+      }
+    }
 }
