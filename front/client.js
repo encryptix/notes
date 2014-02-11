@@ -43,8 +43,6 @@ function create_JSON_object(dataJSON){
                 note_text.value = "";
                 document.getElementById("note_text").value="";
 
-                alert("set note text to blank.."+note_text.value);
-                alert(document.getElementById("note_text").value);
                 message_text.innerText = "Note is locked please unlock to continue";
                 set_editable(false,note_id);
                 lock.checked = true;
@@ -337,7 +335,6 @@ function textarea_to_div(){
     }
     var parent = note_text.parentNode;
     var data = note_text.value;
-    alert(data);
     data = data.replace(/\n/g," <br/>");
 
     //console.log("data is "+data);
