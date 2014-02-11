@@ -250,6 +250,15 @@ function update_note(){
 
         data_b64 = btoa(data);
 
+        //Check that the data is valid b64 before sending
+        //Same check should be done server side before accepting/saving
+        try{
+            atob(data_b64);
+        }catch(e){
+            alert("Please copy the text and refresh..b64 issue");
+            return;
+        }
+        
         //Just error check for updating a note
         ajax(create_JSON_object,"action=update&id="+id+"&data="+data_b64);
     }
@@ -266,6 +275,12 @@ function update_note_name(id){
         log("id: "+id+", name: "+name);
 
         name_b64 = btoa(name);
+        try{
+            atob(name_b64);
+        }catch(e){
+            alert("Please copy the name and refresh..b64 issue");
+            return;
+        }
         ajax(create_JSON_object,"action=update_name&id="+id+"&name="+name_b64);
     }
 }
