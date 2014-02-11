@@ -25,7 +25,7 @@
             </div>
             <div id="note">
                 <!--Need to change from textarea to div and back -->
-                <textarea rows="20" cols="50" id="note_text" onKeyUp="update_note()" onDblClick="toggle_text_area()">
+                <textarea rows="20" cols="50" id="note_text" onKeyUp="update_note()" onDblClick="toggle_text_area()" onBlur="textarea_to_div()">
                 </textarea>
             </div>
             Locked <input type="checkbox" id="lock" name="lock" onClick="lock_clicked()"/>

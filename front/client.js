@@ -389,6 +389,8 @@ function div_to_textarea(){
     textarea.setAttribute('cols',"50");
     textarea.setAttribute('onKeyUp',"update_note()");
     textarea.setAttribute('onDblClick',"toggle_text_area()");
+    textarea.setAttribute('onBlur',"textarea_to_div()");
+
 
     textarea.value = data;
     parent.replaceChild(textarea, note_text);
