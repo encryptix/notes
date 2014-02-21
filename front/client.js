@@ -363,6 +363,10 @@ function textarea_to_div(){
     //condense into one later
     div.innerHTML = convert_to_links(div.innerHTML);
     parent.replaceChild(div, note_text);
+
+    var mode_button = document.getElementById("mode_button");
+    //set class to mode_button_read
+    mode_button.setAttribute('class',"mode_button_read");
 }
 
 function div_to_textarea(){
@@ -395,6 +399,9 @@ function div_to_textarea(){
     textarea.value = data;
     parent.replaceChild(textarea, note_text);
 
+    var mode_button = document.getElementById("mode_button");
+    //set class to mode_button_edit
+    mode_button.setAttribute('class',"mode_button_edit");
 }
 
 function toggle_text_area(){
