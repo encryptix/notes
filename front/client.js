@@ -230,7 +230,7 @@ function delete_note(index){
     }else{
         var id = index;
         if(index =='current_note'){
-            id = document.getElementById("note_id").value;
+            id = document.getElementById("current_note_id").value;
         }
         ajax(receive_delete_note,"action=delete&id="+id);
     }
