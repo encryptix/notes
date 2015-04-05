@@ -17,6 +17,7 @@
                
                 <input type="button" class="add_button" onClick="add_note()" value="+" />
                 <input type="button" id="mode_button" onClick="toggle_text_area()" value="Mode" />
+                Auto Read <input type="checkbox" id="auto_read_only_mode" name="auto_read_only_mode" />
 
                 <input type="button" class="remove_button" onClick="delete_note('current_note')" value="X" />
 
@@ -25,7 +26,7 @@
             </div>
             <div id="note">
                 <!--Need to change from textarea to div and back -->
-                <textarea rows="20" cols="50" id="note_text" onKeyUp="update_note()" onDblClick="toggle_text_area()" onBlur="textarea_to_div()">
+                <textarea rows="20" cols="50" id="note_text" onKeyUp="update_note()" onDblClick="toggle_text_area()" onBlur="textarea_to_div_blur()">
                 </textarea>
             </div>
             Locked <input type="checkbox" id="lock" name="lock" onClick="lock_clicked()"/>

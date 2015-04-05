@@ -228,11 +228,14 @@ function delete_note(index){
     if (lock.checked){
         log("note is locked");
     }else{
-        var id = index;
-        if(index =='current_note'){
-            id = document.getElementById("current_note_id").value;
+        var r = confirm("Are you sure?");
+        if(r){
+            var id = index;
+            if(index =='current_note'){
+                id = document.getElementById("current_note_id").value;
+            }
+            ajax(receive_delete_note,"action=delete&id="+id);
         }
-        ajax(receive_delete_note,"action=delete&id="+id);
     }
 }
 
@@ -393,7 +396,7 @@ function div_to_textarea(){
     textarea.setAttribute('cols',"50");
     textarea.setAttribute('onKeyUp',"update_note()");
     textarea.setAttribute('onDblClick',"toggle_text_area()");
-    textarea.setAttribute('onBlur',"textarea_to_div()");
+    textarea.setAttribute('onBlur',"textarea_to_div_blur()");
 
 
     textarea.value = data;
@@ -450,5 +453,15 @@ function remove_links(){
         console.log("infinite loop in remove links due to quirkyness I couldnt loop");
         return;
       }
+    }
+}
+
+function textarea_to_div_blur(){
+    console.log("textarea to div blur");
+    var auto_exit = document.getElementById("auto_read_only_mode");
+    if(auto_exit.checked){
+        textarea_to_div();
+    }else{
+        console.log("no auto");
     }
 }
