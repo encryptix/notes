@@ -2,6 +2,24 @@ var site="site=http://dev.raynoonanwindows.ie/";
 var first_time = true;
 var new_note_content = "NewNote";
 var new_note_name = "NoteName";
+
+//Base64 Wrappers
+function base64_encode(str){
+    try{
+        return btoa(encodeURIComponent(str));
+    catch(e)
+        alert("B64 encoding failed, copy note and refresh");
+    }
+}
+
+function base64_decode(str){
+    try{
+        return decodeURIComponent(atob(str));
+    }catch(e){
+        alert("b64 decoding failed");
+    }
+}
+
 //Parser
 function create_JSON_object(dataJSON){
     log("Recieved: "+dataJSON);
@@ -116,7 +134,7 @@ function receive_note_indexes(dataJSON){
         if(length > 0){
             for(i=0;i<length;i++){
                 var index = indexes.notes[i].noteID;
-                var note_name = atob(indexes.notes[i].noteName);
+                var note_name = base64_decode(indexes.notes[i].noteName);
 
                 add_note_index(index,note_name);
             }
@@ -138,7 +156,7 @@ function receive_note(dataJSON){
         var id = note.noteID;
         var textb64 = note.note;
 
-        var text = atob(textb64);
+        var text = base64_decode(textb64);
         show_note(id,text);
         set_editable(true);
     }
@@ -216,8 +234,8 @@ function get_note(noteID){
 
 function add_note(){
     log("Add Note");
-    data_b64 = btoa(new_note_content);
-    name_b64 = btoa(new_note_name);
+    data_b64 = base64_encode(new_note_content);
+    name_b64 = base64_encode(new_note_name);
 
     ajax(receive_add_note,"action=add&data="+data_b64+"&name="+name_b64);
 }
@@ -251,12 +269,11 @@ function update_note(){
 
         log("id: "+id+", data: "+data);
 
-        data_b64 = btoa(data);
-
         //Check that the data is valid b64 before sending
         //Same check should be done server side before accepting/saving
         try{
-            atob(data_b64);
+            data_b64 = base64_encode(data);
+            base64_decode(data_b64);
         }catch(e){
             alert("Please copy the text and refresh..b64 issue");
             return;
@@ -277,9 +294,9 @@ function update_note_name(id){
         var name = document.getElementById("note_"+id).getElementsByTagName("input")[1].value;
         log("id: "+id+", name: "+name);
 
-        name_b64 = btoa(name);
         try{
-            atob(name_b64);
+            name_b64 = base64_encode(name);
+            base64_decode(name_b64);
         }catch(e){
             alert("Please copy the name and refresh..b64 issue");
             return;
