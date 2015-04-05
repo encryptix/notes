@@ -7,7 +7,7 @@ var new_note_name = "NoteName";
 function base64_encode(str){
     try{
         return btoa(encodeURIComponent(str));
-    catch(e)
+    }catch(e)
         alert("B64 encoding failed, copy note and refresh");
     }
 }
